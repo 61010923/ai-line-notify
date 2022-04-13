@@ -4,6 +4,7 @@ const _ = require('lodash')
 
 const app = express();
 
+let PORT = process.env.PORT || 5000;
 app.use(express.static('public'));
 
 app.get('/address', (req, res) => {
@@ -140,6 +141,6 @@ app.get('/createCard', (req, res) => {
 })
 
 
-app.listen(3030, () => {
-    console.log('Server started on port 3030');
+app.listen(PORT, () => {
+    console.log('Server started on port 5000');
 })
