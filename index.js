@@ -7,6 +7,12 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 const app = express();
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.urlencoded({
+  extended: true,
+}));
+app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
@@ -17,10 +23,11 @@ app.use((req, res, next) => {
 const PORT = process.env.PORT || 5000;
 app.use(express.static('public'));
 
-app.get('/notify', (req, res) => {
+app.post('/notify', (req, res) => {
   const urlLineNotification = 'https://notify-api.line.me/api/notify';
   const imageFile = 'https://images.freeimages.com/images/large-previews/389/mitze-1380778.jpg';
-
+  const { message } = req.body;
+  console.log(req.body);
   request({
     method: 'POST',
     uri: urlLineNotification,
@@ -31,16 +38,16 @@ app.get('/notify', (req, res) => {
       bearer: process.env.TOKEN,
     },
     form: {
-      message: 'Send Image!',
+      message,
       imageThumbnail: imageFile,
       imageFullsize: imageFile,
     },
   }, (err, httpResponse, body) => {
     if (err) {
-      // console.log(err)
-      res.send(err);
+      console.log(err);
+    //   res.send(err);
     } else {
-      // console.log(body)
+    //   console.log(body);
       res.send(body);
     }
   });
