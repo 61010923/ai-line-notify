@@ -1,33 +1,44 @@
-/* eslint-disable consistent-return */
-const express = require('express');
-const faker = require('faker');
-const _ = require('lodash');
-const request = require('request');
-const dotenv = require('dotenv');
-
-dotenv.config();
-const app = express();
-const bodyParser = require('body-parser');
-
+import express from 'express'
+import request from 'request'
+import dotenv from 'dotenv'
+import bodyParser from 'body-parser'
+import mongoose from 'mongoose'
+// eslint-disable-next-line import/extensions
+import { generateUploadURL } from './s3.js'
+// const request = require('request')
+// const dotenv = require('dotenv')
+// const bodyParser = require('body-parser')
+// eslint-disable-next-line import/extensions
+dotenv.config()
+const app = express()
+// const { generateUploadURL } = require('./s3')
+mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true })
+const db = mongoose.connection
+db.on('error', (error) => console.error(error))
+db.once('open', () => console.log('Connected to Database'))
 app.use(bodyParser.urlencoded({
   extended: true,
-}));
-app.use(express.json());
+}))
+app.use(express.json())
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  next();
-});
-const PORT = process.env.PORT || 5000;
-app.use(express.static('public'));
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  next()
+})
+const PORT = process.env.PORT || 5000
+app.use(express.static('public'))
 
+app.get('/s3Url', async (req, res) => {
+  const url = await generateUploadURL()
+  res.send({ url })
+})
 app.post('/notify', (req, res) => {
-  const urlLineNotification = 'https://notify-api.line.me/api/notify';
-  const imageFile = 'https://images.freeimages.com/images/large-previews/389/mitze-1380778.jpg';
-  const { message } = req.body;
-  console.log(req.body);
+  const urlLineNotification = 'https://notify-api.line.me/api/notify'
+  const imageFile = 'https://images.freeimages.com/images/large-previews/389/mitze-1380778.jpg'
+  const { message, image } = req.body
+  console.log(req.body)
   request({
     method: 'POST',
     uri: urlLineNotification,
@@ -39,152 +50,20 @@ app.post('/notify', (req, res) => {
     },
     form: {
       message,
-      imageThumbnail: imageFile,
-      imageFullsize: imageFile,
+      imageThumbnail: image,
+      imageFullsize: image,
     },
   }, (err, httpResponse, body) => {
     if (err) {
-      console.log(err);
+      console.log(err)
     //   res.send(err);
     } else {
     //   console.log(body);
-      res.send(body);
+      res.send(body)
     }
-  });
-});
-app.get('/address', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { address } = faker;
-      return {
-        country: address.country(),
-        city: address.city(),
-        state: address.state(),
-        zipCode: address.zipCode(),
-        latitude: address.latitude(),
-        longitude: address.longitude(),
-      };
-    }),
-  );
-});
-
-app.get('/products', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { commerce } = faker;
-      return {
-        product: commerce.product(),
-        price: commerce.price(),
-        color: commerce.color(),
-      };
-    }),
-  );
-});
-
-app.get('/images', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { image } = faker;
-      return {
-        image: image.image(),
-        avatar: image.avatar(),
-      };
-    }),
-  );
-});
-
-app.get('/random', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { random } = faker;
-      return {
-        word: random.word(),
-        words: random.words(),
-      };
-    }),
-  );
-});
-
-app.get('/users', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const user = faker.name;
-      return {
-        firstName: user.firstName(),
-        lastName: user.lastName(),
-        jobTitle: user.jobTitle(),
-      };
-    }),
-  );
-});
-
-app.get('/lorem', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { lorem } = faker;
-      return {
-        paragraph: lorem.paragraph(),
-        sentence: lorem.sentence(),
-        paragraphs: lorem.paragraphs(),
-      };
-    }),
-  );
-});
-
-app.get('/userCard', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { helpers } = faker;
-      return {
-        userCard: helpers.userCard(),
-      };
-    }),
-  );
-});
-
-app.get('/createCard', (req, res) => {
-  const { count } = req.query;
-  if (!count) {
-    return res.status(400).send({ errorMsg: 'count query parameter is missing.' });
-  }
-  res.send(
-    _.times(count, () => {
-      const { helpers } = faker;
-      return {
-        createCard: helpers.createCard(),
-      };
-    }),
-  );
-});
+  })
+})
 
 app.listen(PORT, () => {
-  console.log('Server started on port 5000');
-});
+  console.log('Server started on port 5000')
+})
