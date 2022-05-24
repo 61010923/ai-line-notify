@@ -5,10 +5,6 @@ import bodyParser from 'body-parser'
 import mongoose from 'mongoose'
 // eslint-disable-next-line import/extensions
 import { generateUploadURL } from './s3.js'
-// const request = require('request')
-// const dotenv = require('dotenv')
-// const bodyParser = require('body-parser')
-// eslint-disable-next-line import/extensions
 dotenv.config()
 const app = express()
 // const { generateUploadURL } = require('./s3')
@@ -36,9 +32,7 @@ app.get('/s3Url', async (req, res) => {
 })
 app.post('/notify', (req, res) => {
   const urlLineNotification = 'https://notify-api.line.me/api/notify'
-  const imageFile = 'https://images.freeimages.com/images/large-previews/389/mitze-1380778.jpg'
   const { message, image } = req.body
-  console.log(req.body)
   request({
     method: 'POST',
     uri: urlLineNotification,
